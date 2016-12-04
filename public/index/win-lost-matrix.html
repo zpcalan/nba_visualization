@@ -1,1 +1,155 @@
-sadsa
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="/css/AdminLTE.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <style type="text/css">
+        html,body{
+            height: 100%; 
+        }
+        .matrix{
+            border: 1px solid #d2d6de;
+            min-height: 100%;
+        }
+        .Matrix>table{
+            width:100%;
+        }
+        .matrixTitle{
+            text-align: center;
+        }
+        .myth{
+            border: 1px solid transparent;
+            font-family:'Source Sans Pro','Helvetica Neue',Helvetica,Arial,sans-serif;
+            font-weight: 400;
+            transform: rotate(-20deg)
+        }
+    </style>
+</head>
+<body>
+<!-- <div class="main">
+    <table class="test">
+        
+    </table>
+</div> -->
+<div class="matrix">
+    <table class="table">
+        <tbody>
+            <tr class="th">
+                <th class="matrixTitle">win-lost matrix</th>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<script type="text/javascript" src="/lib/d3.js"></script>
+<script type="text/javascript" src="/lib/jQuery.min.js"></script>
+<script type="text/javascript">
+    d3.csv('/data/winLostMatrix_2015.csv',function (error,data) {
+        var tr_data=data;
+        var th_data=[];
+        tr_data[29].WAS="";//特殊情况人工处理
+        // 数据重构
+        for(let i=0;i<tr_data.length;i++){
+            tr_data[i].tdData=[];
+            tr_data[i].totalWin=0;
+            tr_data[i].totalLost=0;
+            for(let property in tr_data[i]){
+                let temp=tr_data[i];
+
+                if(!temp[property]){
+                    temp.State=property;
+                    temp[property]={
+                        'win':0,
+                        'lost':0,
+                        'state':property,
+                    }
+                    temp.tdData.push(temp[property])
+                }
+                else if(property=='Team'){
+                    temp.Name=temp[property].split(' ')[1];
+                }
+                else if(property=='Rk'){}
+                else if(property!='tdData'&&property!='totalWin'&&property!='totalLost'&&property!='Name'&&property!='State'){
+                    let win=temp[property].split('-')[0];
+                    let lost=temp[property].split('-')[1];
+                    temp[property]={
+                        'win':win,
+                        'lost':lost,
+                        'state':property,
+                    }
+                    temp.totalWin+=Number(win);
+                    temp.totalLost+=Number(lost);
+                    temp.tdData.push(temp[property])//用于绑定列数据的数组
+                }
+            }
+            th_data.push({
+                'totalWin':tr_data[i].totalWin,
+                'totalLost':tr_data[i].totalLost,
+                'state':tr_data[i].State
+            })
+        }
+        console.log(tr_data)
+        console.log(th_data)
+        var th=d3.select('.th')
+                .selectAll('th')
+                .data(th_data)
+                .enter()
+                .append('th')
+                .text(function (d) {
+                    return d.state;
+                })
+                .attr('class','myth')
+    })
+    d3.csv('/data/teamNames.csv',function (error,data) {
+        
+    })
+
+</script>
+<script type="text/javascript">
+// 数据排序
+    var data=[[
+        'A',
+        '1',
+        '2',
+        '3'
+    ],[
+        'B',
+        '4',
+        '5',
+        '6'
+    ],[
+        'C',
+        '7',
+        '8',
+        '9'
+    ]];
+    var tr=d3.select('table.test')
+        .selectAll('tr')
+        .data(data)
+        .enter()
+        .append('tr')
+    var td=tr.selectAll('td')
+                .data(function (d,i) {
+                    return d;
+                })
+                .enter()
+                .append('td')
+                .text(function (d) {
+                    return d;
+                })
+    // 行排序
+    tr.sort(function (a,b) {
+        return b[1]-a[1]
+    }).order().selectAll('td')
+        .text(function (d) {
+            return d;
+        })
+    // 列排序
+    td.sort(function (a,b) {
+        return b-a
+    }).text(function (d) {
+        return d;
+    })
+</script>
+</body>
+</html>
