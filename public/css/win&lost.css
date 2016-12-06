@@ -1,0 +1,55 @@
+html,body{
+            width: 100%; 
+        }
+        .matrix{
+            border: 1px solid #d2d6de;
+            width:100%;
+        }
+        .matrix>table{
+            width:100%;
+        }
+        .head{
+            width:100%;
+        }
+        .th_first{
+            width:12%;
+            border: 5px solid transparent;
+            font-family:'Source Sans Pro','Helvetica Neue',Helvetica,Arial,sans-serif;
+            text-align: center;
+            font-weight: 400;
+        }
+        .th_not_first{
+            border: 5px solid transparent;
+            font-family:'Source Sans Pro','Helvetica Neue',Helvetica,Arial,sans-serif;
+            font-weight: 400;
+            width:2.9333%;
+            text-align: center;
+        }
+        .myth p{
+            /*transform: rotate(-20deg)*/
+        }
+        .td_first,.td_not_first{
+            border: 1px solid transparent;
+            padding-top:0px;
+            padding-bottom:0px;
+
+        }
+        /*td样式，绝对定位和z-index方便交互动作*/
+        .white{
+            background-color: #FFFFFF;
+            border:solid #EAE5E5 1px;
+            position: absolute;
+            z-index:2000
+        }
+        .red{
+            background-color: #FFCDCD;
+            border:solid #FF3030 1px;
+            position: absolute;
+            z-index:2000
+        }
+        .green{
+            background-color: #BADABA;
+            border:solid #71C671 1px;
+            position: absolute;
+            z-index:2000
+        }
