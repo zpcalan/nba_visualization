@@ -39,17 +39,25 @@
             border: 1px solid transparent;
             padding-top:0px;
             padding-bottom:0px;
+
         }
         .white{
+            background-color: #FFFFFF;
             border:solid #EAE5E5 1px;
+            position: absolute;
+            z-index:2000
         }
         .red{
             background-color: #FFCDCD;
             border:solid #FF3030 1px;
+            position: absolute;
+            z-index:2000
         }
         .green{
             background-color: #BADABA;
             border:solid #71C671 1px;
+            position: absolute;
+            z-index:2000
         }
     </style>
 </head>
@@ -70,6 +78,12 @@
                 
             </tbody>
     </table>
+</div>
+<div>
+    <input type="text" id="home">
+    <input type="text" id="visitor">
+    <button onclick="search()">search</button>
+    <p>分差为：<span id="diff"></span></p>
 </div>
 <script type="text/javascript" src="/lib/d3.js"></script>
 <script type="text/javascript" src="/lib/jQuery.min.js"></script>
@@ -113,7 +127,7 @@
         }
     }
 /**************************************数据重构部分开始*************************************************/
-    d3.csv('/data/teamNames.csv',function (error,data) {
+    var a=d3.csv('/data/teamNames.csv',function (error,data) {
         var overall=[];
         for(let i=0;i<data.length;i++){
             let temp={};
@@ -122,6 +136,7 @@
             temp.totalLost=data[i].Overall.split('-')[1];
             overall.push(temp);
         }
+        console.log('球队总胜负场：')
         console.log(overall);
         d3.csv('/data/winLostMatrix_2015.csv',function (error,data) {
             var tr_data=data;
@@ -166,6 +181,7 @@
                 tr_data[i].totalWin=overall[mapping(overall,tr_data[i].state)].totalWin;
                 tr_data[i].totalLost=overall[mapping(overall,tr_data[i].state)].totalLost;
             }
+            console.log('tr_data：')
             console.log(tr_data)
             d3.csv('/data/gameScoreList_2015.csv',function (error,raw_data) {
                 var filtered_data=[];
@@ -177,6 +193,8 @@
                     temp.diff=raw.HPTS-raw.VPTS;
                     temp.home=team_mapping[raw.Home];
                     temp.visitor=team_mapping[raw.Visitor];
+                    temp.hpts=raw.HPTS;
+                    temp.vpts=raw.VPTS
                     filtered_data.push(temp);
                 }
                 // 每个队伍的比赛数据筛选
@@ -190,6 +208,7 @@
                         }
                     }
                 }
+                console.log("球队比赛比分：")
                 console.log(team_data)
                 // 遍历tr_data[tdData[team_data]]
                 for(let i=0;i<tr_data.length;i++){
@@ -197,11 +216,19 @@
                         let tr=tr_data[i]
                         let td=tr_data[i].tdData[j];
                         td.diff=[];
-                        var n=0
+                        var count=0;
                         for(let k=0;k<team_data[i].length;k++){
                             let tmp=team_data[i][k];
-                            if(tmp.home==tr.state&&tmp.visitor==td.state)td.diff.push(tmp.diff);
-                            else if(tmp.home==td.state&&tmp.visitor==tr.state)td.diff.push(-tmp.diff);
+                            if(tmp.home==tr.state&&tmp.visitor==td.state){
+                                count++;
+                                td[count]=tmp.hpts+'-'+tmp.vpts;
+                                td.diff.push(tmp.diff);
+                            }
+                            else if(tmp.home==td.state&&tmp.visitor==tr.state){
+                                count++;
+                                td[count]=tmp.hpts+'-'+tmp.vpts;
+                                td.diff.push(-tmp.diff);
+                            }
                             else continue;
                         }
                     }
@@ -233,9 +260,10 @@
                     .append('td')
                     .attr('class','td_not_first');
 
+
             var td1_width=$('.td_first').eq(0).width()-10;//首个td的宽度 较长
             var tdn_width=tdn_height=td1_height=$('.td_not_first').eq(0).width();//后面td的宽度、高度和首个td的高度一致
-    /********************绑定第一列数据开始*****************/
+            /********************绑定第一列数据开始*****************/
                 var svg_1=td_first.append('div')
                                     .style('height',td1_height+'px')
                                     .style('width',td1_width+'px')
@@ -266,8 +294,8 @@
                     })
                     .style('font-size',td1_height/2)
                     .attr('dy',3*td1_height/4)
-        /********************绑定第一列数据结束*****************/
-        /********************绑定第一列后的数据开始*****************/
+            /********************绑定第一列数据结束*****************/
+            /********************绑定第一列后的数据开始*****************/
                 var svg_n=td_not_first.append('div')
                                     .style('height',tdn_width+'px')
                                     .style('width',tdn_width+'px')
@@ -275,6 +303,31 @@
                                         if(d.win>d.lost)return 'green'
                                         else if(d.win<d.lost)return 'red'
                                         else return 'white'
+                                    })
+                                    .style('margin-top',-tdn_width/2+'px')
+                                    .on('mouseover',function (d) {
+                                        d3.select(this)
+                                            .transition()
+                                            .duration(0)
+                                            .style('width',function (d) {
+                                                return tdn_width*2+2+'px'
+                                            })
+                                            .style('height',function (d) {
+                                                return tdn_width*2+1+'px'
+                                            })
+                                            .style('z-index',3000)
+                                    })
+                                    .on('mouseout',function (d) {
+                                        d3.select(this)
+                                            .transition()
+                                            .duration(0)
+                                            .style('width',function (d) {
+                                                return tdn_width+'px'
+                                            })
+                                            .style('height',function (d) {
+                                                return tdn_width+'px'
+                                            })
+                                            .style('z-index',2000)
                                     })
                                     .append('svg')
                                     .attr('height',tdn_width)
@@ -316,9 +369,56 @@
                 th.sort(function (a,b) {
                     return b.totalWin-a.totalWin;
                 })
+                a=team_data;
             })
         })
-    })
+    });
+    // setTimeout(function () {
+    //     console.log(a);
+    // },2000)
+    function search() {
+        team_mapping=['ATL',
+            'BOS',
+            'BRK',
+            'CHA',
+            'CHI',
+            'CLE',
+            'DAL',
+            'DEN',
+            'DET',
+            'GSW',
+            'HOU',
+            'IND',
+            'LAC',
+            'LAL',
+            'MEM',
+            'MIA',
+            'MIL',
+            'MIN',
+            'NOP',
+            'NYK',
+            'OKC',
+            'ORL',
+            'PHI',
+            'PHO',
+            'POR',
+            'SAC',
+            'SAS',
+            'TOR',
+            'UTA',
+            'WAS'
+        ]
+        var home=$('#home').val();
+        var visitor=$('#visitor').val();
+        var diff=[];
+        for(let i=0;i<a.length;i++){
+            for(let j=0;j<a[i].length;j++){
+                if(a[i][j].home==home&&a[i][j].visitor==visitor){
+                    $('#diff').text(a[i][j].diff)
+                }
+            }
+        }
+    }
 
 
 </script>
