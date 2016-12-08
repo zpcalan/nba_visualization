@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="/css/AdminLTE.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/seasonView.css">
+    <style type="text/css">
+        html,body{
+            width: 200%; 
+            overflow-x:auto; 
+        }
+        .main{
+            background-color: #e3e3e3;
+            margin:5px;
+            min-height:100%;
+        }
+        .totalSeason{
+            width:1600px;
+        }
+    </style>
+</head>
+<body>
+<div class="main">
+    <div class="head"></div>
+    <div class="mycontent">
+        <!-- 前两列 胜负场和赛季比分 -->
+        <div class="totalSeason"></div>
+    </div>
+</div>
+<script type="text/javascript" src="/lib/d3.js"></script>
+<script type="text/javascript" src="/lib/jQuery.min.js"></script>
+<script type="text/javascript" src="/js/seasonView.js"></script>
+<script type="text/javascript">
+    var team_mapping={
+        'Atlanta Hawks':'ATL',
+        'Boston Celtics':'BOS',
+        'Brooklyn Nets':'BRK',
+        'Charlotte Hornets':'CHA',
+        'Chicago Bulls':'CHI',
+        'Cleveland Cavaliers':'CLE',
+        'Dallas Mavericks':'DAL',
+        'Denver Nuggets':'DEN',
+        'Detroit Pistons':'DET',
+        'Golden State Warriors':'GSW',
+        'Houston Rockets':'HOU',
+        'Indiana Pacers':'IND',
+        'Los Angeles Clippers':'LAC',
+        'Los Angeles Lakers':'LAL',
+        'Memphis Grizzlies':'MEM',
+        'Miami Heat':'MIA',
+        'Milwaukee Bucks':'MIL',
+        'Minnesota Timberwolves':'MIN',
+        'New Orleans Pelicans':'NOP',
+        'New York Knicks':'NYK',
+        'Oklahoma City Thunder':'OKC',
+        'Orlando Magic':'ORL',
+        'Philadelphia 76ers':'PHI',
+        'Phoenix Suns':'PHO',
+        'Portland Trail Blazers':'POR',
+        'Sacramento Kings':'SAC',
+        'San Antonio Spurs':'SAS',
+        'Toronto Raptors':'TOR',
+        'Utah Jazz':'UTA',
+        'Washington Wizards':'WAS'
+    }
+    var teams=['ATL','BOS','BRK','CHA','CHI','CLE','DAL','DEN','DET','GSW','HOU','IND','LAC','LAL','MEM','MIA','MIL','MIN','NOP','NYK','OKC','ORL','PHI','PHO','POR','SAC','SAS','TOR','UTA','WAS']
+
+    function mapping(overall,state) {
+        for(let i=0;i<overall.length;i++){
+            if(overall[i].state==state)return i;
+        }
+    }
+    var overall=[];
+    var team_data=[]
+    d3.csv('/data/teamNames.csv',function (error,data) {
+        for(let i=0;i<data.length;i++){
+            let temp={};
+            temp.state=data[i].State;
+            temp.totalWin=data[i].Overall.split('-')[0];
+            temp.totalLost=data[i].Overall.split('-')[1];
+            overall.push(temp);
+        }
+        console.log('汇总：');
+        console.log(overall);
+        callback();
+    })
+    d3.csv('/data/gameScoreList_2015.csv', function(error, raw_data) {
+        var filtered_data = [];
+        for (let i = 0; i < raw_data.length; i++) {
+            let temp = {};
+            let raw = raw_data[i];
+            temp.diff = raw.HPTS - raw.VPTS;
+            temp.home = team_mapping[raw.Home];
+            temp.visitor = team_mapping[raw.Visitor];
+            temp.hpts = raw.HPTS;
+            temp.vpts = raw.VPTS;
+            filtered_data.push(temp);
+        }
+        for (let i = 0; i < 30; i++) {
+            team_data[i] = [];
+            for (let j = 0; j < filtered_data.length; j++) {
+                if (filtered_data[j].home == teams[i] || filtered_data[j].visitor == teams[i]) {
+                    var temp = {};
+                    for(property in filtered_data[j]){
+                        temp[property]=filtered_data[j][property];
+                    }
+                    temp.team=teams[i];
+                    team_data[i].push(temp);
+                }
+            }
+        }
+        console.log("球队比赛比分：");
+        console.log(team_data);
+        callback();
+    })
+    function callback() {
+        // 构造赛季数据
+        if(overall.length!=0&&team_data.length!=0){
+            for(let i=0;i<overall.length;i++){
+                overall[i].teamData=team_data[i];
+            }
+            bindData1();
+        }
+    }
+    // 绑定第一部分数据
+    function bindData1() {
+        var maxScore=d3.max(team_data,function (d) {
+            return d3.max(d,function (d) {
+                return Math.abs(d.diff);
+            })
+        })
+        var totalSeason=d3.select('div.totalSeason')
+        // 第一部分的每一行 相当于tr
+        var team=totalSeason.selectAll('div')
+                    .data(overall)
+                    .enter()
+                    .append('div')
+                    .attr('class','team')
+                    .style('height','60px')
+                    .style('clear','both')//这里别忘记清楚浮动，否则最下面会有留白
+        // 宽度高度margin等样式，便于后面连线
+        var rowHeight=60;
+        var rowWidth=1600;
+        var padding=5;
+
+        var totalWidth=150;
+        var totalHeight=rowHeight-2*padding;
+
+        var seasonWidth=rowWidth-totalWidth-2*padding-2*padding;
+        var seasonHeight=rowHeight-2*padding;
+
+        // 总胜负场
+        var total=team.append('div')
+                        .attr('class','total')
+                        .style('padding','5px')
+                        .style('width','150px')
+                        .style('float','left')
+        // 赛季比分
+        var season=team.append('div')
+                        .attr('class','season')
+                        .style('padding','5px')
+                        .style('float','left')
+
+        // 总胜负场的svg
+        var svg_total=total.append('svg')
+                            .attr('height',totalHeight)
+                            .attr('width',totalWidth-2*padding);
+        var win_lost_scale=d3.scaleLinear()
+                            .domain([0,82])
+                            .range([0,totalWidth]);
+        svg_total.append('rect')
+            .attr('height',totalHeight)
+            .attr('width',function (d) {
+                return win_lost_scale(d.totalWin);
+            })
+            .attr('fill','#71C671');
+        svg_total.append('rect')
+            .attr('height',totalHeight)
+            .attr('width',function (d) {
+                return totalWidth-win_lost_scale(d.totalWin);
+            })
+            .attr('x',function (d) {
+                return win_lost_scale(d.totalWin);
+            })
+            .attr('fill','#FF3030');
+        // 赛季比分的svg
+        var svg_season=season.append('svg')
+                            .attr('height',seasonHeight)
+                            .attr('width',seasonWidth);
+        // 赛季比分柱状图
+        xAxis=d3.scaleBand()
+                .domain(d3.range(82))
+                .range([0,seasonWidth])
+                .paddingInner([0.3])
+                .paddingOuter([0.1]);
+        yAxis=d3.scaleLinear()
+                .domain([0,maxScore])
+                .range([seasonHeight/2,0]);
+        svg_season.selectAll('rect')
+                    .data(function (d) {
+                        return d.teamData;
+                    })
+                    .enter()
+                    .append('rect')
+                    .attr('fill',function (d) {
+                        if(d.team==d.home&&d.diff>0||d.team==d.visitor&&d.diff<0){
+                            return '#71C671';
+                        }
+                        else{
+                            return '#FF3030';
+                        }
+                    })
+                    .attr('height',function (d) {
+                        return seasonHeight/2-yAxis(Math.abs(d.diff));
+                    })
+                    .attr('width',xAxis.bandwidth())
+                    .attr('x',function (d,i) {
+                        return xAxis(i);
+                    })
+                    .attr('y',function (d,i) {
+                        if(d.team==d.home&&d.diff>0||d.team==d.visitor&&d.diff<0){
+                            return yAxis(Math.abs(d.diff));
+                        }
+                        else{
+                            return yAxis(0);
+                        }
+                    })
+        svg_season
+
+
+
+
+
+
+        team.sort(function (a,b) {
+            return b.totalWin-a.totalWin;
+        })
+    }
+</script>
+</body>
+</html>

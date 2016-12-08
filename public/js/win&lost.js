@@ -249,7 +249,7 @@
                       .domain(d3.range(4))
                       .range([1,tdn_height-2])
                       .paddingInner([0.3])
-                      .paddingOuter([0.1])//这两个间距无论设多少都没事 0~1之间
+                      .paddingOuter([0.1])
                 // xAxis矩形宽度的映射
                 var xAxis=d3.scaleLinear()
                        .domain([0,60])
