@@ -4,6 +4,8 @@
     <title></title>
     <link rel="stylesheet" type="text/css" href="/css/AdminLTE.min.css">
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/ionslider/ion.rangeSlider.css">
+    <link rel="stylesheet" type="text/css" href="/css/ionslider/ion.rangeSlider.skinNice.css">
     <link rel="stylesheet" type="text/css" href="/css/seasonView.css">
     <style type="text/css">
         html,body{
@@ -18,11 +20,18 @@
         .totalSeason{
             width:1600px;
         }
+        .filter{
+            width:20%;
+        }
     </style>
 </head>
 <body>
 <div class="main">
-    <div class="head"></div>
+    <div class="head">
+        <div class="filter">
+            <input type="text" id="score_filter" style="display: none;"/>
+        </div>
+    </div>
     <div class="mycontent">
         <!-- 前两列 胜负场和赛季比分 -->
         <div class="totalSeason"></div>
@@ -30,6 +39,7 @@
 </div>
 <script type="text/javascript" src="/lib/d3.js"></script>
 <script type="text/javascript" src="/lib/jQuery.min.js"></script>
+<script type="text/javascript" src="/lib/ion.rangeSlider.min.js"></script>
 <script type="text/javascript" src="/js/seasonView.js"></script>
 <script type="text/javascript">
     var team_mapping={
@@ -71,8 +81,25 @@
             if(overall[i].state==state)return i;
         }
     }
+    function winLost(a) {
+        if(a.home==a.team&&a.diff>0||a.home!=a.team&&a.diff<0)return 1;
+        else return 0;
+    }
+    function isSame(a,b) {
+        if(winLost(a)==1&&winLost(b)==1){
+            return 1;
+        }
+        else if(winLost(a)==0&&winLost(b)==0){
+            return -1;
+        }
+        else{
+            return 0;
+        }
+    }
     var overall=[];
-    var team_data=[]
+    var team_data=[];
+    var streak_data=[];
+    var text_data=[];
     d3.csv('/data/teamNames.csv',function (error,data) {
         for(let i=0;i<data.length;i++){
             let temp={};
@@ -98,6 +125,7 @@
             filtered_data.push(temp);
         }
         for (let i = 0; i < 30; i++) {
+            // 比赛比分数据
             team_data[i] = [];
             for (let j = 0; j < filtered_data.length; j++) {
                 if (filtered_data[j].home == teams[i] || filtered_data[j].visitor == teams[i]) {
@@ -107,6 +135,27 @@
                     }
                     temp.team=teams[i];
                     team_data[i].push(temp);
+                }
+            }
+            // 比赛连胜/败数据 连胜/败文本
+            // 1代表单独的胜败场 没有区分
+            streak_data[i]=[];
+            text_data[i]=[];
+            for(let j=0;j<team_data[i].length;j++){
+                let k=1,flag=1;
+                while(team_data[i][j+1]&&isSame(team_data[i][j],team_data[i][j+1])){
+                    if(isSame(team_data[i][j],team_data[i][j+1])==-1)flag=-1;
+                    j++;
+                    k++;
+                }
+                for(let t=0;t<k;t++){
+                    streak_data[i].push(flag*k);
+                }
+                if(k!=1){
+                    var temp={};
+                    temp.streak=flag*k;
+                    temp.index=Math.floor((j+j-k+1)/2);
+                    text_data[i].push(temp);
                 }
             }
         }
@@ -119,6 +168,8 @@
         if(overall.length!=0&&team_data.length!=0){
             for(let i=0;i<overall.length;i++){
                 overall[i].teamData=team_data[i];
+                overall[i].streakData=streak_data[i];
+                overall[i].textData=text_data[i];
             }
             bindData1();
         }
@@ -169,6 +220,7 @@
         var win_lost_scale=d3.scaleLinear()
                             .domain([0,82])
                             .range([0,totalWidth]);
+        // 总胜负场的矩形
         svg_total.append('rect')
             .attr('height',totalHeight)
             .attr('width',function (d) {
@@ -184,6 +236,12 @@
                 return win_lost_scale(d.totalWin);
             })
             .attr('fill','#FF3030');
+        svg_total.append('text')
+                .text(function (d) {
+                    return d.totalWin+'-'+d.totalLost+'   '+d.state;
+                })
+                .style('font-size',totalHeight/2)
+                .attr('dy',3*totalHeight/4)
         // 赛季比分的svg
         var svg_season=season.append('svg')
                             .attr('height',seasonHeight)
@@ -197,6 +255,7 @@
         yAxis=d3.scaleLinear()
                 .domain([0,maxScore])
                 .range([seasonHeight/2,0]);
+
         svg_season.selectAll('rect')
                     .data(function (d) {
                         return d.teamData;
@@ -226,17 +285,85 @@
                             return yAxis(0);
                         }
                     })
-        svg_season
 
+        // 赛季比分连胜/败曲线
+        svg_season.each(function (d) {//将连胜败场次转换为坐标
+            var streakData=d.streakData;
+            var teamData=d.teamData;
+            d.streakLines=streakLines=[];
+            for(var i=0;i<streakData.length;){
+                let streak=Math.abs(streakData[i]);
+                if(streak>1){
+                    for(let k=i;k<streak+i-1;k++){
+                        let temp={};
+                        let game1=teamData[k];
+                        let game2=teamData[k+1];
+                        temp.x1=xAxis(k)+xAxis.bandwidth()/2;
+                        if(game1.team==game1.home&&game1.diff>0||game1.team==game1.visitor&&game1.diff<0)temp.y1=yAxis(Math.abs(game1.diff));
+                        else temp.y1=yAxis(0)+seasonHeight/2-yAxis(Math.abs(game1.diff));
 
-
-
-
-
+                        temp.x2=xAxis(k+1)+xAxis.bandwidth()/2;
+                        if(game2.team==game2.home&&game2.diff>0||game2.team==game2.visitor&&game2.diff<0)temp.y2=yAxis(Math.abs(game2.diff));
+                        else temp.y2=yAxis(0)+seasonHeight/2-yAxis(Math.abs(game2.diff));
+                        temp.streak=streak;
+                        streakLines.push(temp);
+                    }
+                }
+                i+=streak;
+            }
+        })
+        svg_season.selectAll('line')
+                    .data(function (d) {
+                        return d.streakLines;
+                    })
+                    .enter()
+                    .append('line')
+                    .attr('x1',function (d) {
+                        return d.x1;
+                    })
+                    .attr('x2',function (d) {
+                        return d.x2;
+                    })
+                    .attr('y1',function (d) {
+                        return d.y1;
+                    })
+                    .attr('y2',function (d) {
+                        return d.y2;
+                    })
+                    .attr('stroke-width',0.5)
+                    .attr('stroke','black')
+        // 赛季比分streak提示文本
+        svg_season.selectAll('text')
+                    .data(function (d) {
+                        return d.textData;
+                    })
+                    .enter()
+                    .append('text')
+                    .attr('x',function (d) {
+                        return xAxis(d.index);
+                    })
+                    .attr('y',function (d) {
+                        if(d.streak>0) return seasonHeight/2+10+2;
+                        else return seasonHeight/2-2
+                    })
+                    .text(function (d) {
+                        return Math.abs(d.streak);
+                    })
+                    .style('font-size','10px')
         team.sort(function (a,b) {
             return b.totalWin-a.totalWin;
         })
     }
+    $("#score_filter").ionRangeSlider({
+        min: 0,
+        max: 53,
+        from: 0,
+        grid: true,
+        grid_num: 10
+    })
+    $("#score_filter").change(function () {
+        console.log($(this).val())
+    })
 </script>
 </body>
 </html>
