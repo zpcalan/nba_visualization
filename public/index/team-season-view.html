@@ -331,6 +331,53 @@
                             .attr('class','team')
                             .style('height','60px')
                             .style('clear','both')//这里别忘记清楚浮动，否则最下面会有留白
+                                .on('mouseover mouseout',function (d,i) {//在鼠标悬浮的时候也高亮显示
+                                        d.selected=!d.selected;
+                                        for(let i=0;i<app.points.length;i++){
+                                            if(d.state==app.points[i].state){
+                                                app.points[i].selected=!app.points[i].selected;
+                                                d3.select(this).style('border',app.points[i].selected?'1px yellow solid ':'')
+                                                break;
+                                            }
+                                        }
+                                        for(let i=0;i<app.rebound.length;i++){
+                                            if(d.state==app.rebound[i].state){
+                                                app.rebound[i].selected=!app.rebound[i].selected;
+                                                d3.select(this).style('border',app.points[i].selected?' yellow solid ':'')
+                                                break;
+                                            }
+                                        }
+                                        for(let i=0;i<app.assist.length;i++){
+                                            if(d.state==app.assist[i].state){
+                                                app.assist[i].selected=!app.assist[i].selected;
+                                                d3.select(this).style('border',app.points[i].selected?' yellow solid ':'')
+                                                break;
+                                            }
+                                        }
+                                        for(let i=0;i<app.turnover.length;i++){
+                                            if(d.state==app.turnover[i].state){
+                                                app.turnover[i].selected=!app.turnover[i].selected;
+                                                d3.select(this).style('border',app.points[i].selected?' yellow solid ':'')
+                                                break;
+                                            }
+                                        }
+                                        for(let i=0;i<app.block.length;i++){
+                                            if(d.state==app.block[i].state){
+                                                app.block[i].selected=!app.block[i].selected;
+                                                d3.select(this).style('border',app.points[i].selected?' yellow solid ':'')
+                                                break;
+                                            }
+                                        }
+                                        for(let i=0;i<app.lines.length;i++){
+                                            if(d.state==app.lines[i].state){
+                                                app.lines[i].selected=!app.lines[i].selected;
+                                                d3.select(this).style('border',app.points[i].selected?' yellow solid ':'')
+                                                break;
+                                            }
+                                        }
+                                        lineUpdate();
+                                        highLight();
+                                    })
                 // 宽度高度margin等样式，便于后面连线
                 var rowHeight=60;
                 var rowWidth=1600;
@@ -358,47 +405,47 @@
                 var svg_total=total.append('svg')
                                     .attr('height',totalHeight)
                                     .attr('width',totalWidth-2*padding)
-                                    .on('click',function (d,i) {
-                                        d.selected=!d.selected;
-                                        for(let i=0;i<app.points.length;i++){
-                                            if(d.state==app.points[i].state){
-                                                app.points[i].selected=!app.points[i].selected;
-                                                break;
-                                            }
-                                        }
-                                        for(let i=0;i<app.rebound.length;i++){
-                                            if(d.state==app.rebound[i].state){
-                                                app.rebound[i].selected=!app.rebound[i].selected;
-                                                break;
-                                            }
-                                        }
-                                        for(let i=0;i<app.assist.length;i++){
-                                            if(d.state==app.assist[i].state){
-                                                app.assist[i].selected=!app.assist[i].selected;
-                                                break;
-                                            }
-                                        }
-                                        for(let i=0;i<app.turnover.length;i++){
-                                            if(d.state==app.turnover[i].state){
-                                                app.turnover[i].selected=!app.turnover[i].selected;
-                                                break;
-                                            }
-                                        }
-                                        for(let i=0;i<app.block.length;i++){
-                                            if(d.state==app.block[i].state){
-                                                app.block[i].selected=!app.block[i].selected;
-                                                break;
-                                            }
-                                        }
-                                        for(let i=0;i<app.lines.length;i++){
-                                            if(d.state==app.lines[i].state){
-                                                app.lines[i].selected=!app.lines[i].selected;
-                                                break;
-                                            }
-                                        }
-                                        lineUpdate();
-                                        highLight();
-                                    })
+                                    // .on('click',function (d,i) {
+                                    //     d.selected=!d.selected;
+                                    //     for(let i=0;i<app.points.length;i++){
+                                    //         if(d.state==app.points[i].state){
+                                    //             app.points[i].selected=!app.points[i].selected;
+                                    //             break;
+                                    //         }
+                                    //     }
+                                    //     for(let i=0;i<app.rebound.length;i++){
+                                    //         if(d.state==app.rebound[i].state){
+                                    //             app.rebound[i].selected=!app.rebound[i].selected;
+                                    //             break;
+                                    //         }
+                                    //     }
+                                    //     for(let i=0;i<app.assist.length;i++){
+                                    //         if(d.state==app.assist[i].state){
+                                    //             app.assist[i].selected=!app.assist[i].selected;
+                                    //             break;
+                                    //         }
+                                    //     }
+                                    //     for(let i=0;i<app.turnover.length;i++){
+                                    //         if(d.state==app.turnover[i].state){
+                                    //             app.turnover[i].selected=!app.turnover[i].selected;
+                                    //             break;
+                                    //         }
+                                    //     }
+                                    //     for(let i=0;i<app.block.length;i++){
+                                    //         if(d.state==app.block[i].state){
+                                    //             app.block[i].selected=!app.block[i].selected;
+                                    //             break;
+                                    //         }
+                                    //     }
+                                    //     for(let i=0;i<app.lines.length;i++){
+                                    //         if(d.state==app.lines[i].state){
+                                    //             app.lines[i].selected=!app.lines[i].selected;
+                                    //             break;
+                                    //         }
+                                    //     }
+                                    //     lineUpdate();
+                                    //     highLight();
+                                    // })
                 var win_lost_scale=d3.scaleLinear()
                                     .domain([0,82])
                                     .range([0,totalWidth]);
