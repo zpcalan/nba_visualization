@@ -252,6 +252,7 @@
                         temp.diff = raw.HPTS - raw.VPTS;
                         temp.home = app.team_mapping[raw.Home];
                         temp.visitor = app.team_mapping[raw.Visitor];
+                        temp.date = raw.Date;
                         temp.hpts = raw.HPTS;
                         temp.vpts = raw.VPTS;
                         filtered_data.push(temp);
@@ -336,42 +337,37 @@
                                         for(let i=0;i<app.points.length;i++){
                                             if(d.state==app.points[i].state){
                                                 app.points[i].selected=!app.points[i].selected;
-                                                d3.select(this).style('border',app.points[i].selected?'1px yellow solid ':'')
+                                                d3.select(this).style('border',app.points[i].selected?'solid yellow':'')
                                                 break;
                                             }
                                         }
                                         for(let i=0;i<app.rebound.length;i++){
                                             if(d.state==app.rebound[i].state){
                                                 app.rebound[i].selected=!app.rebound[i].selected;
-                                                d3.select(this).style('border',app.points[i].selected?' yellow solid ':'')
                                                 break;
                                             }
                                         }
                                         for(let i=0;i<app.assist.length;i++){
                                             if(d.state==app.assist[i].state){
                                                 app.assist[i].selected=!app.assist[i].selected;
-                                                d3.select(this).style('border',app.points[i].selected?' yellow solid ':'')
                                                 break;
                                             }
                                         }
                                         for(let i=0;i<app.turnover.length;i++){
                                             if(d.state==app.turnover[i].state){
                                                 app.turnover[i].selected=!app.turnover[i].selected;
-                                                d3.select(this).style('border',app.points[i].selected?' yellow solid ':'')
                                                 break;
                                             }
                                         }
                                         for(let i=0;i<app.block.length;i++){
                                             if(d.state==app.block[i].state){
                                                 app.block[i].selected=!app.block[i].selected;
-                                                d3.select(this).style('border',app.points[i].selected?' yellow solid ':'')
                                                 break;
                                             }
                                         }
                                         for(let i=0;i<app.lines.length;i++){
                                             if(d.state==app.lines[i].state){
                                                 app.lines[i].selected=!app.lines[i].selected;
-                                                d3.select(this).style('border',app.points[i].selected?' yellow solid ':'')
                                                 break;
                                             }
                                         }
@@ -753,7 +749,6 @@
                                                     return d.teamData;
                                                 });
                     var seasonEnter=seasonUpdate.enter();
-
                     seasonUpdate.attr('fill',function (d) {
                                     if(d.team==d.home&&d.diff>0||d.team==d.visitor&&d.diff<0){
                                         if(Math.abs(d.diff)>=$("#score_filter").val()&&Math.abs(d.streak)>=$("#streak_filter").val()){
@@ -767,6 +762,9 @@
                                         }
                                         return '#FF3030';
                                     }
+                                })
+                                .attr('title',function (d,i) {
+                                    return d.team+d.home+d.diff+d.date;
                                 })
                                 .attr('height',function (d) {
                                     return seasonHeight/2-yAxis(Math.abs(d.diff));
@@ -792,6 +790,9 @@
                                         return '#FF3030';
                                     }
                                 })
+                                .attr('title',function (d,i) {
+                                    return d.team+d.home+d.diff+d.date;
+                                })
                                 .attr('height',function (d) {
                                     return seasonHeight/2-yAxis(Math.abs(d.diff));
                                 })
@@ -806,7 +807,29 @@
                                     else{
                                         return yAxis(0);
                                     }
-                                });
+                                })
+                                .on('mouseenter',function (d,i) {
+                                    svg_season.filter(function (_d,_i) {
+                                        return _d.state==d.team;
+                                    }).append('text')
+                                        .attr('class','mytitle')
+                                        // .attr('x',Number(d3.select(this).attr('x'))+Number(xAxis.bandwidth()))
+                                        .attr('y',yAxis(0)-18)
+                                        .attr("style", "fill: #0000CC; font-size: 12px;")
+                                        .selectAll('tspan')
+                                        .data([d.home+'-'+d.visitor,d.hpts+'-'+d.vpts,d.date])
+                                        .enter()  
+                                        .append("tspan")  
+                                        .attr("x",Number(d3.select(this).attr('x'))+Number(xAxis.bandwidth()))  
+                                        .attr("dy","1em")  
+                                        .text(function(d){  
+                                            return d;  
+                                        });
+                                })
+                                .on('mouseleave',function (d,i) {
+                                    svg_season.select('text.mytitle')
+                                                .remove();
+                                })
                 }
                 // 更新球队平均数据的线段
                 function lineUpdate() {
