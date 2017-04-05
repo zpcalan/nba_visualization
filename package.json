@@ -7,10 +7,7 @@
     "express": "^4.14.0"
   },
   "devDependencies": {},
-  "scripts": {
-    "server": "node index.js",
-    "node-buffer": "node public/my_demo_test/node_api/node-buffer.js"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zpcalan/js-test.git"

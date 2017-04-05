@@ -1,8 +1,8 @@
 html,body{
             width: 100%; 
+            overflow-x:auto;
         }
         .matrix{
-            border: 1px solid #d2d6de;
             width:100%;
         }
         .matrix>table{
@@ -38,18 +38,15 @@ html,body{
         .white{
             background-color: #FFFFFF;
             border:solid #EAE5E5 1px;
-            position: absolute;
             z-index:2000
         }
         .red{
             background-color: #FFCDCD;
             border:solid #FF3030 1px;
-            position: absolute;
             z-index:2000
         }
         .green{
             background-color: #BADABA;
             border:solid #71C671 1px;
-            position: absolute;
             z-index:2000
         }

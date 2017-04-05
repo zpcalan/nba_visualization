@@ -172,7 +172,8 @@
 
 
             var td1_width=$('.td_first').eq(0).width()-10;//首个td的宽度 较长
-            var tdn_width=tdn_height=td1_height=$('.td_not_first').eq(0).width();//后面td的宽度、高度和首个td的高度一致
+            var tdn_width=tdn_height=td1_height=$('.th_not_first').eq(0).outerWidth()+1;//后面td的宽度、高度和首个td的高度一致
+            console.log(tdn_width)
             /********************绑定第一列数据开始*****************/
                 var svg_1=td_first.append('div')
                                     .style('height',td1_height+'px')
@@ -214,36 +215,36 @@
                                         else if(d.win<d.lost)return 'red'
                                         else return 'white'
                                     })
-                                    .style('margin-top',-tdn_width/2+'px')
+                                    // .style('margin-top',-tdn_width/2+'px')
                                     /*****td交互部分开始*****/
-                                    .on('mouseover',function (d) {
-                                        d3.select(this)
-                                            .transition()
-                                            .duration(0)
-                                            .style('width',function (d) {
-                                                return tdn_width*2+2+'px'
-                                            })
-                                            .style('height',function (d) {
-                                                return tdn_width*2+1+'px'
-                                            })
-                                            .style('z-index',3000)
-                                    })
-                                    .on('mouseout',function (d) {
-                                        d3.select(this)
-                                            .transition()
-                                            .duration(0)
-                                            .style('width',function (d) {
-                                                return tdn_width+'px'
-                                            })
-                                            .style('height',function (d) {
-                                                return tdn_width+'px'
-                                            })
-                                            .style('z-index',2000)
-                                    })
+                                    // .on('mouseover',function (d) {
+                                    //     d3.select(this)
+                                    //         .transition()
+                                    //         .duration(0)
+                                    //         .style('width',function (d) {
+                                    //             return tdn_width*2+2+'px'
+                                    //         })
+                                    //         .style('height',function (d) {
+                                    //             return tdn_width*2+1+'px'
+                                    //         })
+                                    //         .style('z-index',3000)
+                                    // })
+                                    // .on('mouseout',function (d) {
+                                    //     d3.select(this)
+                                    //         .transition()
+                                    //         .duration(0)
+                                    //         .style('width',function (d) {
+                                    //             return tdn_width+'px'
+                                    //         })
+                                    //         .style('height',function (d) {
+                                    //             return tdn_width+'px'
+                                    //         })
+                                    //         .style('z-index',2000)
+                                    // })
                                     /*****td交互部分结束*****/
                                     .append('svg')
-                                    .attr('height',tdn_width)
-                                    .attr('width',tdn_width)
+                                    .attr('height',tdn_width-2)
+                                    .attr('width',tdn_width-2)
                 // yAxis是为了方便分差矩形布局平均
                 var yAxis=d3.scaleBand()
                       .domain(d3.range(4))

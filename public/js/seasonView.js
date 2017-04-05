@@ -181,12 +181,12 @@ var color=d3.merge([d3.schemeCategory20,d3.schemeCategory20b]);
                             .attr('class','team')
                             .style('height','60px')
                             .style('clear','both')//这里别忘记清楚浮动，否则最下面会有留白
-                                .on('mouseover mouseout',function (d,i) {//在鼠标悬浮的时候也高亮显示
+                                .on('click',function (d,i) {
                                         d.selected=!d.selected;
                                         for(let i=0;i<app.points.length;i++){
                                             if(d.state==app.points[i].state){
                                                 app.points[i].selected=!app.points[i].selected;
-                                                d3.select(this).style('border',app.points[i].selected?'solid yellow':'')
+                                                d3.select(this).style('border',app.points[i].selected?'solid 1px yellow':'')
                                                 break;
                                             }
                                         }
@@ -487,14 +487,12 @@ var color=d3.merge([d3.schemeCategory20,d3.schemeCategory20b]);
                     max: maxScoreDiff+1,
                     from: maxScoreDiff+1,
                     grid: true,
-                    grid_num: 5
                 })
                 $("#streak_filter").ionRangeSlider({
                     min: 0,
                     max: maxStreak+1,
                     from: maxStreak+1,
                     grid: true,
-                    grid_num: 5
                 })
                 $("#score_filter").change(function () {
                     scoreUpdate(svg_season);
@@ -509,12 +507,13 @@ var color=d3.merge([d3.schemeCategory20,d3.schemeCategory20b]);
                     var assist_g=svg.selectAll('g.assist');
                     var turnover_g=svg.selectAll('g.turnover');
                     var block_g=svg.selectAll('g.block');
+                    // color[app.index[d.state]]
                     points_g.each(function (d,i) {
                         if(d.selected){
                             d3.select(this)
                                 .selectAll('rect')
-                                .attr('stroke-width',5)
-                                .attr('stroke',color[app.index[d.state]]);
+                                .attr('stroke-width',2)
+                                .attr('stroke','black');
                         }
                         else{
                             d3.select(this)
@@ -526,8 +525,8 @@ var color=d3.merge([d3.schemeCategory20,d3.schemeCategory20b]);
                         if(d.selected){
                             d3.select(this)
                                 .selectAll('rect')
-                                .attr('stroke-width',5)
-                                .attr('stroke',color[app.index[d.state]]);
+                                .attr('stroke-width',2)
+                                .attr('stroke','black');
                         }
                         else{
                             d3.select(this)
@@ -539,8 +538,8 @@ var color=d3.merge([d3.schemeCategory20,d3.schemeCategory20b]);
                         if(d.selected){
                             d3.select(this)
                                 .selectAll('rect')
-                                .attr('stroke-width',5)
-                                .attr('stroke',color[app.index[d.state]]);
+                                .attr('stroke-width',2)
+                                .attr('stroke','black');
                         }
                         else{
                             d3.select(this)
@@ -552,8 +551,8 @@ var color=d3.merge([d3.schemeCategory20,d3.schemeCategory20b]);
                         if(d.selected){
                             d3.select(this)
                                 .selectAll('rect')
-                                .attr('stroke-width',5)
-                                .attr('stroke',color[app.index[d.state]]);
+                                .attr('stroke-width',2)
+                                .attr('stroke','black');
                         }
                         else{
                             d3.select(this)
@@ -565,8 +564,8 @@ var color=d3.merge([d3.schemeCategory20,d3.schemeCategory20b]);
                         if(d.selected){
                             d3.select(this)
                                 .selectAll('rect')
-                                .attr('stroke-width',5)
-                                .attr('stroke',color[app.index[d.state]]);
+                                .attr('stroke-width',2)
+                                .attr('stroke','black');
                         }
                         else{
                             d3.select(this)
@@ -579,15 +578,17 @@ var color=d3.merge([d3.schemeCategory20,d3.schemeCategory20b]);
                         .each(function (d,i) {
                             if(d.selected){
                                 d3.select(this)
-                                    .attr('stroke-width',3)
-                                    .attr('stroke','black');
+                                    .attr('stroke-width',2)
+                                    .attr('stroke','black')
+                                    .attr('opacity',1);
                             }
                             else{
                                 d3.select(this)
                                     .attr('stroke-width',1)
                                     .attr('stroke',function (d) {
                                         return d.wl==1?'green':'red'
-                                    });
+                                    })
+                                    .attr('opacity',0.5);
                             }
                         })
                 }
@@ -607,7 +608,7 @@ var color=d3.merge([d3.schemeCategory20,d3.schemeCategory20b]);
                                     }
                                     else{
                                         if(Math.abs(d.diff)>=$("#score_filter").val()&&Math.abs(d.streak)>=$("#streak_filter").val()){
-                                            return '#FF0000';
+                                            return '#DA0505';
                                         }
                                         return '#FF3030';
                                     }
@@ -672,18 +673,21 @@ var color=d3.merge([d3.schemeCategory20,d3.schemeCategory20b]);
                                             }
                                         })  
                                         .attr('fill','white')
+                                        .attr('fill-opacity',0)
                                         .attr('height',40)
                                         .attr('width',110)
-                                        .attr('rx',10)
-                                        .attr('ry',10)
-
+                                        .attr('rx',4)
+                                        .attr('ry',4)
+                                        .transition()
+                                        .duration(1000)
+                                        .attr('fill-opacity',1)
 
                                     svg_season.filter(function (_d,_i) {
                                         return _d.state==d.team;
                                     }).append('text')
                                         .attr('class','mytitle')
                                         .attr('y',yAxis(0)-18)
-                                        .attr("style", "fill: #0000CC; font-size: 12px;")
+                                        .attr("style", "fill: #000000; font-size: 12px;")
                                         .selectAll('tspan')
                                         .data([d.home+'-'+d.visitor,d.hpts+'-'+d.vpts,d.date])
                                         .enter()  
@@ -699,7 +703,11 @@ var color=d3.merge([d3.schemeCategory20,d3.schemeCategory20b]);
                                         .attr("dy","1em")  
                                         .text(function(d){  
                                             return d;  
-                                        });
+                                        })
+                                        .attr('fill-opacity',0)
+                                        .transition()
+                                        .duration(1000)
+                                        .attr('fill-opacity',1)
                                 })
                                 .on('mouseleave',function (d,i) {
                                     svg_season.select('text.mytitle')
@@ -707,6 +715,7 @@ var color=d3.merge([d3.schemeCategory20,d3.schemeCategory20b]);
                                     svg_season.select('rect.mytitle')
                                                 .remove();
                                 })
+
                 }
                 // 更新球队平均数据的线段
                 function lineUpdate() {
@@ -760,7 +769,8 @@ var color=d3.merge([d3.schemeCategory20,d3.schemeCategory20b]);
                             .attr('stroke-width',1)
                             .attr('stroke',function (d) {
                                 return d.wl==1?'green':'red'
-                            });
+                            })
+                            .attr('opacity',0.5);
                     updateLine.attr('x1',function (d) {
                                     return d.x1;
                                 })
@@ -772,10 +782,6 @@ var color=d3.merge([d3.schemeCategory20,d3.schemeCategory20b]);
                                 })
                                 .attr('y2',function (d) {
                                     return d.y2;
-                                })
-                                .attr('stroke-width',1)
-                                .attr('stroke',function (d) {
-                                    return d.wl==1?'green':'red'
                                 });
                 }
                 // 交互操作
@@ -823,8 +829,8 @@ var color=d3.merge([d3.schemeCategory20,d3.schemeCategory20b]);
                         $(this).find('i').prop('class','fa fa-fw fa-sort-amount-desc');
                     }
                     else{
-                        points_g.sort(function (b,a) {
-                                    return b.own-a.own;
+                        points_g.sort(function (a,b) {
+                                    return b.oppo-a.oppo;
                                 }).attr('transform',function (d,i) {
                                     return 'translate(0'+','+(5+65*i)+')';
                                 }); 
@@ -845,8 +851,8 @@ var color=d3.merge([d3.schemeCategory20,d3.schemeCategory20b]);
                         $(this).find('i').prop('class','fa fa-fw fa-sort-amount-desc');
                     }
                     else{
-                        rebound_g.sort(function (b,a) {
-                                    return b.own-a.own;
+                        rebound_g.sort(function (a,b) {
+                                    return b.oppo-a.oppo;
                                 }).attr('transform',function (d,i) {
                                     return 'translate(0'+','+(5+65*i)+')';
                                 }); 
@@ -867,8 +873,8 @@ var color=d3.merge([d3.schemeCategory20,d3.schemeCategory20b]);
                         $(this).find('i').prop('class','fa fa-fw fa-sort-amount-desc');
                     }
                     else{
-                        assist_g.sort(function (b,a) {
-                                    return b.own-a.own;
+                        assist_g.sort(function (a,b) {
+                                    return b.oppo-a.oppo;
                                 }).attr('transform',function (d,i) {
                                     return 'translate(0'+','+(5+65*i)+')';
                                 }); 
@@ -889,8 +895,8 @@ var color=d3.merge([d3.schemeCategory20,d3.schemeCategory20b]);
                         $(this).find('i').prop('class','fa fa-fw fa-sort-amount-desc');
                     }
                     else{
-                        turnover_g.sort(function (b,a) {
-                                    return b.own-a.own;
+                        turnover_g.sort(function (a,b) {
+                                    return b.oppo-a.oppo;
                                 }).attr('transform',function (d,i) {
                                     return 'translate(0'+','+(5+65*i)+')';
                                 }); 
@@ -911,8 +917,8 @@ var color=d3.merge([d3.schemeCategory20,d3.schemeCategory20b]);
                         $(this).find('i').prop('class','fa fa-fw fa-sort-amount-desc');
                     }
                     else{
-                        block_g.sort(function (b,a) {
-                                    return b.own-a.own;
+                        block_g.sort(function (a,b) {
+                                    return b.oppo-a.oppo;
                                 }).attr('transform',function (d,i) {
                                     return 'translate(0'+','+(5+65*i)+')';
                                 }); 
